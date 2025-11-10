@@ -882,7 +882,7 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
     }
 
     @objc private func buyMeCoffeeClicked() {
-        if let url = URL(string: "https://blabbernotes.com/buymeacoffee") {
+        if let url = URL(string: "https://buymeacoffee.com/blabbernotes") {
             NSWorkspace.shared.open(url)
         }
     }

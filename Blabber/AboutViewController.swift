@@ -185,7 +185,7 @@ class AboutViewController: NSViewController {
     }
 
     @objc private func openBuyMeCoffee() {
-        if let url = URL(string: "https://blabbernotes.com/buymeacoffee") {
+        if let url = URL(string: "https://buymeacoffee.com/blabbernotes") {
             NSWorkspace.shared.open(url)
         }
     }

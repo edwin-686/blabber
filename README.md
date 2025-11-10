@@ -155,7 +155,7 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for detai
 - **Website:** [blabbernotes.com](https://blabbernotes.com)
 - **Issues:** [GitHub Issues](https://github.com/edwin-686/blabber/issues)
 - **X (Twitter):** [@BlabberNotes](https://x.com/BlabberNotes)
-- **Buy Me a Coffee:** [Support Blabber](https://blabbernotes.com/buymeacoffee)
+- **Buy Me a Coffee:** [Support Blabber](https://buymeacoffee.com/blabbernotes)
 
 ---
 
