@@ -19,10 +19,15 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
     private var statusLabel: NSTextField!
     private var progressBar: NSProgressIndicator!
     private var modelSelectorPopup: NSPopUpButton!
+    private var brewCommandField: NSTextField!
+    private var whisperCommandField: NSTextField!
+    private var copyBrewButton: NSButton!
+    private var copyWhisperButton: NSButton!
 
     // Onboarding steps
     private enum Step {
         case welcome
+        case whisperInstall
         case accessibility
         case microphone
         case modelDownload
@@ -80,14 +85,14 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
 
         // Message Label
         messageLabel = NSTextField(labelWithString: "")
-        messageLabel.font = NSFont.systemFont(ofSize: 14)
+        messageLabel.font = NSFont.systemFont(ofSize: 13)
         messageLabel.alignment = .left
         messageLabel.isEditable = false
         messageLabel.isBordered = false
         messageLabel.backgroundColor = .clear
         messageLabel.lineBreakMode = .byWordWrapping
         messageLabel.maximumNumberOfLines = 0
-        messageLabel.frame = NSRect(x: 50, y: 100, width: 500, height: 150)
+        messageLabel.frame = NSRect(x: 50, y: 95, width: 500, height: 165)
         contentView.addSubview(messageLabel)
 
         // Status Label (for showing permission check results)
@@ -141,6 +146,56 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         modelSelectorPopup = NSPopUpButton(frame: NSRect(x: 50, y: 100, width: 500, height: 25))
         modelSelectorPopup.isHidden = true
         contentView.addSubview(modelSelectorPopup)
+
+        // Homebrew Install Command Field (hidden by default)
+        brewCommandField = NSTextField(frame: NSRect(x: 50, y: 185, width: 475, height: 20))
+        brewCommandField.isEditable = false
+        brewCommandField.isBordered = true
+        brewCommandField.backgroundColor = NSColor.textBackgroundColor
+        brewCommandField.font = NSFont.monospacedSystemFont(ofSize: 9, weight: .regular)
+        brewCommandField.lineBreakMode = .byTruncatingTail
+        brewCommandField.isHidden = true
+        contentView.addSubview(brewCommandField)
+
+        // Copy Homebrew Command Button (hidden by default)
+        copyBrewButton = NSButton(frame: NSRect(x: 530, y: 184, width: 20, height: 20))
+        copyBrewButton.title = ""
+        copyBrewButton.isBordered = false
+        copyBrewButton.bezelStyle = .shadowlessSquare
+        if let copyIcon = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "Copy") {
+            let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .regular)
+            copyBrewButton.image = copyIcon.withSymbolConfiguration(config)
+        }
+        copyBrewButton.imagePosition = .imageOnly
+        copyBrewButton.target = self
+        copyBrewButton.action = #selector(copyBrewCommandClicked)
+        copyBrewButton.isHidden = true
+        contentView.addSubview(copyBrewButton)
+
+        // whisper-cpp Install Command Field (hidden by default)
+        whisperCommandField = NSTextField(frame: NSRect(x: 50, y: 142, width: 475, height: 20))
+        whisperCommandField.isEditable = false
+        whisperCommandField.isBordered = true
+        whisperCommandField.backgroundColor = NSColor.textBackgroundColor
+        whisperCommandField.font = NSFont.monospacedSystemFont(ofSize: 9, weight: .regular)
+        whisperCommandField.lineBreakMode = .byTruncatingTail
+        whisperCommandField.isHidden = true
+        contentView.addSubview(whisperCommandField)
+
+        // Copy whisper-cpp Command Button (hidden by default)
+        copyWhisperButton = NSButton(frame: NSRect(x: 530, y: 141, width: 20, height: 20))
+        copyWhisperButton.title = ""
+        copyWhisperButton.isBordered = false
+        copyWhisperButton.bezelStyle = .shadowlessSquare
+        if let copyIcon = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "Copy") {
+            let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .regular)
+            copyWhisperButton.image = copyIcon.withSymbolConfiguration(config)
+        }
+        copyWhisperButton.imagePosition = .imageOnly
+        copyWhisperButton.target = self
+        copyWhisperButton.action = #selector(copyWhisperCommandClicked)
+        copyWhisperButton.isHidden = true
+        contentView.addSubview(copyWhisperButton)
     }
 
     // MARK: - Step Management
@@ -151,9 +206,17 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         skipButton.isHidden = true  // Hide by default, show in specific steps
         websiteButton.isHidden = true  // Hide by default, show in complete step
 
+        // Hide whisper install UI elements by default
+        brewCommandField.isHidden = true
+        copyBrewButton.isHidden = true
+        whisperCommandField.isHidden = true
+        copyWhisperButton.isHidden = true
+
         switch step {
         case .welcome:
             showWelcomeStep()
+        case .whisperInstall:
+            showWhisperInstallStep()
         case .accessibility:
             showAccessibilityStep()
         case .microphone:
@@ -185,6 +248,65 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         Let's set up a few optional permissions to get you started.
         """
         nextButton.title = "Get Started"
+    }
+
+    private func showWhisperInstallStep() {
+        // Hide model selector and command fields initially
+        modelSelectorPopup.isHidden = true
+        brewCommandField.isHidden = true
+        copyBrewButton.isHidden = true
+        whisperCommandField.isHidden = true
+        copyWhisperButton.isHidden = true
+
+        // Show terminal/command icon
+        if let terminalIcon = NSImage(systemSymbolName: "terminal.fill", accessibilityDescription: "Terminal") {
+            let config = NSImage.SymbolConfiguration(pointSize: 60, weight: .regular)
+            iconImageView.image = terminalIcon.withSymbolConfiguration(config)
+            iconImageView.contentTintColor = .systemGreen
+        }
+
+        titleLabel.stringValue = "whisper-cpp Installation"
+
+        // Check if whisper-cli is already installed
+        if checkWhisperInstalled() {
+            messageLabel.stringValue = """
+            ✓ whisper-cpp is already installed!
+
+            Blabber uses whisper-cpp for local transcription. The required dependency has been detected on your system.
+
+            Click "Next" to continue.
+            """
+            statusLabel.stringValue = "✓ whisper-cli found"
+            statusLabel.textColor = .systemGreen
+            nextButton.title = "Next"
+            skipButton.isHidden = true
+        } else {
+            messageLabel.stringValue = """
+            Blabber requires whisper-cpp for local transcription. Install using Homebrew:
+
+            1. Install Homebrew (skip if already installed):
+
+
+            2. Install whisper-cpp:
+
+
+            Copy and run these commands in Terminal, then click "Check Again".
+            """
+
+            // Show command fields and buttons
+            brewCommandField.isHidden = false
+            brewCommandField.stringValue = "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+            copyBrewButton.isHidden = false
+
+            whisperCommandField.isHidden = false
+            whisperCommandField.stringValue = "brew install whisper-cpp"
+            copyWhisperButton.isHidden = false
+
+            statusLabel.stringValue = "⚠️ whisper-cli not found"
+            statusLabel.textColor = .systemOrange
+            nextButton.title = "Check Again"
+            skipButton.isHidden = false
+        }
     }
 
     private func showAccessibilityStep() {
@@ -361,6 +483,8 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
 
     @objc private func skipButtonClicked() {
         switch currentStep {
+        case .whisperInstall:
+            showWhisperInstallSkipConfirmation()
         case .accessibility:
             showAccessibilitySkipConfirmation()
         case .microphone:
@@ -376,10 +500,58 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    @objc private func copyBrewCommandClicked() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(brewCommandField.stringValue, forType: .string)
+
+        // Show brief visual confirmation with checkmark icon
+        if let checkIcon = NSImage(systemSymbolName: "checkmark", accessibilityDescription: "Copied") {
+            copyBrewButton.image = checkIcon
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            if let copyIcon = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "Copy") {
+                self?.copyBrewButton.image = copyIcon
+            }
+        }
+    }
+
+    @objc private func copyWhisperCommandClicked() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(whisperCommandField.stringValue, forType: .string)
+
+        // Show brief visual confirmation with checkmark icon
+        if let checkIcon = NSImage(systemSymbolName: "checkmark", accessibilityDescription: "Copied") {
+            copyWhisperButton.image = checkIcon
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            if let copyIcon = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "Copy") {
+                self?.copyWhisperButton.image = copyIcon
+            }
+        }
+    }
+
     @objc private func nextButtonClicked() {
         switch currentStep {
         case .welcome:
-            showStep(.accessibility)
+            showStep(.whisperInstall)
+
+        case .whisperInstall:
+            if checkWhisperInstalled() {
+                // whisper-cli found, proceed to accessibility
+                statusLabel.stringValue = "✓ whisper-cli confirmed!"
+                statusLabel.textColor = .systemGreen
+
+                // Auto-advance after short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    self?.showStep(.accessibility)
+                }
+            } else {
+                // Still not installed - update status
+                statusLabel.stringValue = "⚠️ whisper-cli not found. Please run the commands above."
+                statusLabel.textColor = .systemOrange
+            }
 
         case .accessibility:
             // Check current permission status
@@ -528,6 +700,34 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - Skip Confirmation Dialogs
 
+    private func showWhisperInstallSkipConfirmation() {
+        let alert = NSAlert()
+        alert.messageText = "Skip whisper-cpp Installation?"
+        alert.informativeText = """
+        Without whisper-cpp installed, local transcription won't work.
+
+        Blabber's core feature is transcribing audio locally on your Mac. Without whisper-cpp, you'll only be able to use:
+
+        • Cloud transcription (requires API keys and internet)
+        • Workflow processor with copied text
+
+        You can install whisper-cpp later, but local transcription is Blabber's main privacy-focused feature.
+
+        Are you sure you want to skip this installation?
+        """
+        alert.alertStyle = .critical
+        alert.addButton(withTitle: "Go Back")
+        alert.addButton(withTitle: "Skip Anyway")
+
+        let response = alert.runModal()
+        if response == .alertSecondButtonReturn {
+            // User confirmed skip
+            os_log(.default, log: Self.logger, "User skipped whisper-cpp installation")
+            showStep(.accessibility)
+        }
+        // If first button (Go Back), do nothing - stay on current screen
+    }
+
     private func showAccessibilitySkipConfirmation() {
         let alert = NSAlert()
         alert.messageText = "Skip Accessibility Permission?"
@@ -579,6 +779,40 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
     }
 
     // MARK: - Permission Checking
+
+    private func checkWhisperInstalled() -> Bool {
+        // Check standard whisper-cli paths (same logic as WhisperTranscriber)
+        let possiblePaths = [
+            "/opt/homebrew/bin/whisper-cli",  // Apple Silicon
+            "/usr/local/bin/whisper-cli"       // Intel Mac
+        ]
+
+        for path in possiblePaths {
+            if FileManager.default.fileExists(atPath: path) {
+                return true
+            }
+        }
+
+        // Fallback to which command
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["whisper-cli"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+
+        try? process.run()
+        process.waitUntilExit()
+
+        if process.terminationStatus == 0 {
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !path.isEmpty {
+                return true
+            }
+        }
+
+        return false
+    }
 
     private func checkAccessibilityPermission() -> Bool {
         return AXIsProcessTrusted()

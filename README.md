@@ -1,6 +1,8 @@
-# Blabber
-
-> Local-first voice transcription for macOS using Whisper AI
+<div align="center">
+  <img src="logo.png" alt="Blabber Logo" width="128" height="128">
+  <h1>Blabber</h1>
+  <p><strong>Local-first voice transcription for macOS using Whisper AI</strong></p>
+</div>
 
 Blabber is a macOS menu bar application that provides fast, accurate voice transcription with a privacy-first approach. Record audio with customizable hotkeys and get instant transcriptions using local Whisper AI or cloud providers.
 
@@ -78,10 +80,11 @@ The built app will be in `build/Release/Blabber.app`.
 ## Usage
 
 ### First Launch
-1. Grant microphone and accessibility permissions when prompted
-2. Choose your transcription provider (Local Whisper or cloud)
-3. Download a Whisper model if using local transcription
-4. Configure your preferred hotkey
+The onboarding wizard will guide you through setup:
+1. **whisper-cpp Installation** - Verify whisper-cpp is installed (or get instructions to install it)
+2. **Accessibility Permissions** - Grant permission for global hotkeys and auto-paste
+3. **Microphone Access** - Grant permission for audio recording
+4. **Model Download** - Download a Whisper AI model for local transcription
 5. Start transcribing!
 
 ### Recording Audio
