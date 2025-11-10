@@ -39,7 +39,7 @@ Blabber is a macOS menu bar application that provides fast, accurate voice trans
 ## Installation
 
 ### Download DMG
-1. Download the latest release from [blabbernotes.com/download](https://blabbernotes.com/download)
+1. Download the latest release from [GitHub Releases](https://github.com/edwin-686/blabber/releases/latest)
 2. Open the DMG file
 3. Drag Blabber.app to your Applications folder
 4. Launch Blabber and complete the onboarding wizard
@@ -154,7 +154,8 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for detai
 
 - **Website:** [blabbernotes.com](https://blabbernotes.com)
 - **Issues:** [GitHub Issues](https://github.com/edwin-686/blabber/issues)
-- **Privacy:** All processing happens locally by default, no data is collected
+- **X (Twitter):** [@BlabberNotes](https://x.com/BlabberNotes)
+- **Buy Me a Coffee:** [Support Blabber](https://blabbernotes.com/buymeacoffee)
 
 ---
 
