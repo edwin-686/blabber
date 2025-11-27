@@ -176,7 +176,7 @@ class SettingsManager {
         }
     }
 
-    /// Hotkey for opening workflow processor (default: Right Option key press-and-hold)
+    /// Hotkey for opening workflow processor (default: Right Option key double-tap)
     var workflowProcessorHotKey: (keyCode: UInt16?, modifierFlags: NSEvent.ModifierFlags) {
         get {
             if let dict = defaults.dictionary(forKey: Keys.workflowProcessorHotKey),
@@ -204,8 +204,8 @@ class SettingsManager {
             if let mode = defaults.string(forKey: Keys.workflowProcessorMode) {
                 return mode
             }
-            // Default: hold mode (for Right Option key)
-            return "hold"
+            // Default: double-tap mode (for Right Option key)
+            return "double-tap"
         }
         set {
             defaults.set(newValue, forKey: Keys.workflowProcessorMode)
@@ -256,7 +256,7 @@ class SettingsManager {
         holdToRecordHotKey = (54, [])  // Right Command
         toggleRecordingHotKey = (54, [])  // Right Command double-tap
         workflowProcessorHotKey = (61, [])  // Right Option key
-        workflowProcessorMode = "hold"  // Default: hold mode
+        workflowProcessorMode = "double-tap"  // Default: double-tap mode
     }
 
     func resetHotkeysToDefaults() {
@@ -264,6 +264,6 @@ class SettingsManager {
         holdToRecordHotKey = (54, [])  // Right Command
         toggleRecordingHotKey = (54, [])  // Right Command double-tap
         workflowProcessorHotKey = (61, [])  // Right Option key
-        workflowProcessorMode = "hold"  // Default: hold mode
+        workflowProcessorMode = "double-tap"  // Default: double-tap mode
     }
 }

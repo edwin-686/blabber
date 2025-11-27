@@ -903,28 +903,32 @@ class MenuBarManager: NSObject {
         let isWindowVisible = workflowProcessorWindowController?.window?.isVisible == true
 
         if isWindowVisible && shouldToggle {
-            // Window is open and we should toggle - close it
-            workflowProcessorWindowController?.window?.close()
-        } else {
-            // Window is closed or doesn't exist - open it
-            // OR window is open but we're not toggling (e.g., from right-click) - just bring to front
+            // Window is visible - check if it's also focused
+            let isWindowFocused = workflowProcessorWindowController?.window?.isKeyWindow == true && NSApp.isActive
 
-            // Create or reuse workflow processor window
-            if workflowProcessorWindowController == nil {
-                workflowProcessorWindowController = WorkflowProcessorWindowController()
+            if isWindowFocused {
+                // Window is visible AND focused - close it
+                workflowProcessorWindowController?.window?.close()
+                return
             }
-
-            // Auto-paste if enabled (only when first opening)
-            if !isWindowVisible && SettingsManager.shared.workflowAutoPasteEnabled {
-                workflowProcessorWindowController?.autoPasteIfEnabled()
-            }
-
-            // Show window and bring it to front
-            workflowProcessorWindowController?.showWindow(nil)
-            workflowProcessorWindowController?.window?.makeKeyAndOrderFront(nil)
-            workflowProcessorWindowController?.window?.orderFrontRegardless()
-            NSApp.activate(ignoringOtherApps: true)
+            // Window is visible but not focused - fall through to bring it to front
         }
+
+        // Create or reuse workflow processor window
+        if workflowProcessorWindowController == nil {
+            workflowProcessorWindowController = WorkflowProcessorWindowController()
+        }
+
+        // Auto-paste if enabled (only when first opening, not when bringing to front)
+        if !isWindowVisible && SettingsManager.shared.workflowAutoPasteEnabled {
+            workflowProcessorWindowController?.autoPasteIfEnabled()
+        }
+
+        // Show window and bring it to front
+        workflowProcessorWindowController?.showWindow(nil)
+        workflowProcessorWindowController?.window?.makeKeyAndOrderFront(nil)
+        workflowProcessorWindowController?.window?.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     @objc private func quit() {
