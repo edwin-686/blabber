@@ -57,6 +57,21 @@ class CloudTranscriber {
         body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
         body.append("\(modelIdentifier)\r\n".data(using: .utf8)!)
 
+        // Add language parameter (if not auto-detect)
+        let language = SettingsManager.shared.transcriptionLanguage
+        if language != "auto" {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"language\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(language)\r\n".data(using: .utf8)!)
+            #if DEBUG
+            print("CloudTranscriber: Using language: \(language)")
+            #endif
+        } else {
+            #if DEBUG
+            print("CloudTranscriber: Using auto language detection")
+            #endif
+        }
+
         // Add file parameter
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(audioFile.lastPathComponent)\"\r\n".data(using: .utf8)!)

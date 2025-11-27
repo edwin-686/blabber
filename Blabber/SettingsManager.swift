@@ -26,6 +26,9 @@ class SettingsManager {
 
         // Find & Replace
         static let findReplacePairs = "findReplacePairs"
+
+        // Transcription
+        static let transcriptionLanguage = "transcriptionLanguage"
     }
 
     // MARK: - Properties with Defaults
@@ -235,6 +238,18 @@ class SettingsManager {
         }
     }
 
+    // MARK: - Transcription Settings
+
+    /// Language for transcription (ISO 639-1 code, or "auto" for auto-detect)
+    var transcriptionLanguage: String {
+        get {
+            return defaults.string(forKey: Keys.transcriptionLanguage) ?? "auto"
+        }
+        set {
+            defaults.set(newValue, forKey: Keys.transcriptionLanguage)
+        }
+    }
+
     // MARK: - Initialization
 
     private init() {
@@ -251,6 +266,7 @@ class SettingsManager {
         whisperModelPath = NSHomeDirectory() + "/Models/ggml-large-v3-turbo.bin"
         maxRecordingDuration = 600 // 10 minutes
         workflowAutoPasteEnabled = true
+        transcriptionLanguage = "auto"
 
         // Reset hotkeys to defaults
         holdToRecordHotKey = (54, [])  // Right Command

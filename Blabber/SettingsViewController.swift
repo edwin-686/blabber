@@ -13,7 +13,7 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
     private var maxRecordingDurationTextField: NSTextField!
     private var historySizeTextField: NSTextField!
     private var modelSelectorPopup: NSPopUpButton!
-    private var modelSizeLabel: NSTextField!
+    private var languageSelectorPopup: NSPopUpButton!
     private var downloadModelsButton: NSButton!
 
     // Hotkey Recorders
@@ -224,37 +224,41 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
         view.addSubview(modelsLabel)
         yPosition -= 35
 
-        // Current Model Label
-        let currentModelLabel = createLabel(text: "Selected Model:", fontSize: 13, bold: false)
-        currentModelLabel.frame = NSRect(x: 30, y: yPosition, width: 400, height: 20)
-        view.addSubview(currentModelLabel)
-        yPosition -= 30
+        // Language Selector Label
+        let languageLabel = createLabel(text: "Language:", fontSize: 13, bold: false)
+        languageLabel.frame = NSRect(x: 30, y: yPosition, width: 80, height: 20)
+        view.addSubview(languageLabel)
 
-        // Model Selector Popup - reduced width to fit in 450px window
-        modelSelectorPopup = NSPopUpButton(frame: NSRect(x: 30, y: yPosition, width: 380, height: 25))
+        // Language Selector Popup
+        languageSelectorPopup = NSPopUpButton(frame: NSRect(x: 115, y: yPosition - 2, width: 295, height: 25))
+        languageSelectorPopup.target = self
+        languageSelectorPopup.action = #selector(languageSelectionChanged)
+        view.addSubview(languageSelectorPopup)
+        yPosition -= 35
+
+        // Current Model Label
+        let currentModelLabel = createLabel(text: "Model:", fontSize: 13, bold: false)
+        currentModelLabel.frame = NSRect(x: 30, y: yPosition, width: 80, height: 20)
+        view.addSubview(currentModelLabel)
+
+        // Model Selector Popup
+        modelSelectorPopup = NSPopUpButton(frame: NSRect(x: 115, y: yPosition - 2, width: 295, height: 25))
         modelSelectorPopup.target = self
         modelSelectorPopup.action = #selector(modelSelectionChanged)
         view.addSubview(modelSelectorPopup)
-        yPosition -= 35
-
-        // Model Size Label
-        modelSizeLabel = createLabel(text: "", fontSize: 10, bold: false)
-        modelSizeLabel.frame = NSRect(x: 30, y: yPosition, width: 380, height: 20)
-        modelSizeLabel.textColor = .secondaryLabelColor
-        view.addSubview(modelSizeLabel)
-        yPosition -= 30
+        yPosition -= 55
 
         // Local Models Button
-        downloadModelsButton = NSButton(frame: NSRect(x: 30, y: yPosition, width: 150, height: 32))
-        downloadModelsButton.title = "Local Models..."
+        downloadModelsButton = NSButton(frame: NSRect(x: 30, y: yPosition, width: 175, height: 32))
+        downloadModelsButton.title = "Configure Local Model"
         downloadModelsButton.bezelStyle = .rounded
         downloadModelsButton.target = self
         downloadModelsButton.action = #selector(downloadModelsClicked)
         view.addSubview(downloadModelsButton)
 
         // Cloud Models Button
-        let cloudModelsButton = NSButton(frame: NSRect(x: 190, y: yPosition, width: 150, height: 32))
-        cloudModelsButton.title = "Cloud Models..."
+        let cloudModelsButton = NSButton(frame: NSRect(x: 215, y: yPosition, width: 175, height: 32))
+        cloudModelsButton.title = "Configure Cloud Model"
         cloudModelsButton.bezelStyle = .rounded
         cloudModelsButton.target = self
         cloudModelsButton.action = #selector(cloudModelsClicked)
@@ -423,8 +427,9 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
         let workflowMode = settings.workflowProcessorMode
         workflowProcessorRecorder.setHotKey(keyCode: workflowProcessor.keyCode, modifierFlags: workflowProcessor.modifierFlags, mode: workflowMode)
 
-        // Load installed models
+        // Load installed models and language selector
         loadModelSelector()
+        loadLanguageSelector()
     }
 
     private func loadModelSelector() {
@@ -434,9 +439,8 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
         let configuredCloudModels = cloudManager.getConfiguredTranscriptionModels()
 
         if installedModels.isEmpty && configuredCloudModels.isEmpty {
-            modelSelectorPopup.addItem(withTitle: "No models available")
+            modelSelectorPopup.addItem(withTitle: "No models available - download or configure one")
             modelSelectorPopup.isEnabled = false
-            modelSizeLabel.stringValue = "Please download a local model or configure a cloud model"
             return
         }
 
@@ -510,32 +514,87 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
         }
 
         modelSelectorPopup.selectItem(at: selectedIndex)
-        updateModelSizeLabel()
     }
 
-    private func updateModelSizeLabel() {
-        let selectedTitle = modelSelectorPopup.titleOfSelectedItem ?? ""
+    private func loadLanguageSelector() {
+        languageSelectorPopup.removeAllItems()
 
-        // Check if it's a cloud model
-        if selectedTitle.contains("(Cloud)") {
-            modelSizeLabel.stringValue = "Cloud-based transcription via API"
-            return
+        // Top 20 languages + Auto Detect (sorted alphabetically after Auto)
+        let languages: [(name: String, code: String)] = [
+            ("Auto Detect", "auto"),
+            ("Afrikaans", "af"),
+            ("Arabic", "ar"),
+            ("Chinese", "zh"),
+            ("Danish", "da"),
+            ("Dutch", "nl"),
+            ("English", "en"),
+            ("French", "fr"),
+            ("German", "de"),
+            ("Hindi", "hi"),
+            ("Italian", "it"),
+            ("Japanese", "ja"),
+            ("Korean", "ko"),
+            ("Norwegian", "no"),
+            ("Polish", "pl"),
+            ("Portuguese", "pt"),
+            ("Russian", "ru"),
+            ("Spanish", "es"),
+            ("Swedish", "sv"),
+            ("Turkish", "tr"),
+            ("Vietnamese", "vi")
+        ]
+
+        // Add languages to dropdown
+        for (name, _) in languages {
+            languageSelectorPopup.addItem(withTitle: name)
         }
 
-        // It's a local model - find it and show size
-        let installedModels = modelManager.getInstalledModels()
-        for model in installedModels {
-            let modelTitle = "  " + model.dropdownDisplayName
-            if selectedTitle == modelTitle {
-                if let sizeString = modelManager.getModelFileSize(model) {
-                    let path = modelManager.modelPath(for: model).path
-                    modelSizeLabel.stringValue = "File size: \(sizeString) • \(path)"
-                }
-                return
+        // Select current language
+        let currentLanguage = settings.transcriptionLanguage
+        for (index, (_, code)) in languages.enumerated() {
+            if code == currentLanguage {
+                languageSelectorPopup.selectItem(at: index)
+                break
             }
         }
+    }
 
-        modelSizeLabel.stringValue = ""
+    @objc private func languageSelectionChanged() {
+        // Map display names back to language codes
+        let languages: [(name: String, code: String)] = [
+            ("Auto Detect", "auto"),
+            ("Afrikaans", "af"),
+            ("Arabic", "ar"),
+            ("Chinese", "zh"),
+            ("Danish", "da"),
+            ("Dutch", "nl"),
+            ("English", "en"),
+            ("French", "fr"),
+            ("German", "de"),
+            ("Hindi", "hi"),
+            ("Italian", "it"),
+            ("Japanese", "ja"),
+            ("Korean", "ko"),
+            ("Norwegian", "no"),
+            ("Polish", "pl"),
+            ("Portuguese", "pt"),
+            ("Russian", "ru"),
+            ("Spanish", "es"),
+            ("Swedish", "sv"),
+            ("Turkish", "tr"),
+            ("Vietnamese", "vi")
+        ]
+
+        let selectedTitle = languageSelectorPopup.titleOfSelectedItem ?? "Auto Detect"
+        for (name, code) in languages {
+            if name == selectedTitle {
+                settings.transcriptionLanguage = code
+                #if DEBUG
+                print("SettingsViewController: Transcription language changed to: \(code)")
+                #endif
+                break
+            }
+        }
     }
 
     @objc private func audioFeedbackChanged() {
@@ -754,7 +813,6 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
                 if selectedTitle == modelTitle {
                     // Store cloud model with "cloud:" prefix
                     settings.whisperModelPath = "cloud:\(cloudModel.id)"
-                    updateModelSizeLabel()
                     #if DEBUG
                     print("SettingsViewController: Selected cloud model: \(cloudModel.name) (ID: \(cloudModel.id))")
                     #endif
@@ -769,7 +827,6 @@ class SettingsViewController: NSViewController, NSWindowDelegate, NSTextFieldDel
                 if selectedTitle == modelTitle {
                     let modelPath = modelManager.modelPath(for: model).path
                     settings.whisperModelPath = modelPath
-                    updateModelSizeLabel()
                     #if DEBUG
                     print("SettingsViewController: Selected local model: \(model.name) at \(modelPath)")
                     #endif

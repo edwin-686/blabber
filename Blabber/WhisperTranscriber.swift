@@ -85,12 +85,23 @@ class WhisperTranscriber {
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: whisperPath)
-        process.arguments = [
+
+        // Get language setting
+        let language = SettingsManager.shared.transcriptionLanguage
+
+        var arguments = [
             "-m", modelPath,
             "-f", audioFile.path,
             "--output-txt",
-            "--no-timestamps"
+            "--no-timestamps",
+            "-l", language  // Pass language (or "auto" for auto-detect)
         ]
+
+        #if DEBUG
+        print("WhisperTranscriber: Using language: \(language)")
+        #endif
+
+        process.arguments = arguments
 
         let pipe = Pipe()
         process.standardOutput = pipe
