@@ -16,6 +16,7 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
     private var nextButton: NSButton!
     private var skipButton: NSButton!
     private var websiteButton: NSButton!
+    private var websiteLinkButton: NSButton!
     private var statusLabel: NSTextField!
     private var progressBar: NSProgressIndicator!
     private var modelSelectorPopup: NSPopUpButton!
@@ -106,7 +107,7 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         contentView.addSubview(statusLabel)
 
         // Next Button
-        nextButton = NSButton(frame: NSRect(x: 450, y: 30, width: 100, height: 32))
+        nextButton = NSButton(frame: NSRect(x: 430, y: 30, width: 120, height: 32))
         nextButton.title = "Next"
         nextButton.bezelStyle = .rounded
         nextButton.keyEquivalent = "\r"  // Enter key
@@ -123,9 +124,22 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         skipButton.isHidden = true
         contentView.addSubview(skipButton)
 
-        // Website/Donate Button (hidden by default)
-        websiteButton = NSButton(frame: NSRect(x: 50, y: 30, width: 160, height: 32))
-        websiteButton.title = "Buy Me a Coffee ☕"
+        // Website Link Button (bottom left, hidden by default)
+        websiteLinkButton = NSButton(frame: NSRect(x: 50, y: 30, width: 120, height: 32))
+        websiteLinkButton.title = "Blabber"
+        websiteLinkButton.image = NSImage(systemSymbolName: "globe", accessibilityDescription: "Website")
+        websiteLinkButton.imagePosition = .imageTrailing
+        websiteLinkButton.bezelStyle = .rounded
+        websiteLinkButton.target = self
+        websiteLinkButton.action = #selector(websiteLinkButtonClicked)
+        websiteLinkButton.isHidden = true
+        contentView.addSubview(websiteLinkButton)
+
+        // Buy Me a Coffee Button (middle, hidden by default)
+        websiteButton = NSButton(frame: NSRect(x: 240, y: 30, width: 120, height: 32))
+        websiteButton.title = "Buy me a"
+        websiteButton.image = NSImage(systemSymbolName: "cup.and.saucer.fill", accessibilityDescription: "Coffee")
+        websiteButton.imagePosition = .imageTrailing
         websiteButton.bezelStyle = .rounded
         websiteButton.target = self
         websiteButton.action = #selector(websiteButtonClicked)
@@ -143,7 +157,7 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         contentView.addSubview(progressBar)
 
         // Model Selector Popup (hidden by default)
-        modelSelectorPopup = NSPopUpButton(frame: NSRect(x: 50, y: 100, width: 500, height: 25))
+        modelSelectorPopup = NSPopUpButton(frame: NSRect(x: 50, y: 85, width: 500, height: 25))
         modelSelectorPopup.isHidden = true
         contentView.addSubview(modelSelectorPopup)
 
@@ -205,6 +219,7 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         statusLabel.stringValue = ""
         skipButton.isHidden = true  // Hide by default, show in specific steps
         websiteButton.isHidden = true  // Hide by default, show in complete step
+        websiteLinkButton.isHidden = true  // Hide by default, show in complete step
 
         // Hide whisper install UI elements by default
         brewCommandField.isHidden = true
@@ -287,7 +302,7 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
             1. Install Homebrew (skip if already installed):
 
 
-            2. Install whisper-cpp:
+            2. Install whisper-cpp (if command fails, restart Terminal):
 
 
             Copy and run these commands in Terminal, then click "Check Again".
@@ -299,7 +314,7 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
             copyBrewButton.isHidden = false
 
             whisperCommandField.isHidden = false
-            whisperCommandField.stringValue = "brew install whisper-cpp"
+            whisperCommandField.stringValue = "eval \"$(/opt/homebrew/bin/brew shellenv)\" && brew install whisper-cpp"
             copyWhisperButton.isHidden = false
 
             statusLabel.stringValue = "⚠️ whisper-cli not found"
@@ -474,7 +489,10 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
 
         Enjoy your privacy-focused transcription experience!
         """
-        nextButton.title = "Start Using Blabber"
+        nextButton.title = "Start Using"
+        nextButton.image = NSImage(systemSymbolName: "waveform", accessibilityDescription: "Waveform")
+        nextButton.imagePosition = .imageTrailing
+        websiteLinkButton.isHidden = false  // Show website link
         websiteButton.isHidden = false  // Show donate button
         statusLabel.stringValue = ""
     }
@@ -495,6 +513,12 @@ class OnboardingWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func websiteButtonClicked() {
+        if let url = URL(string: "https://buymeacoffee.com/blabbernotes") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc private func websiteLinkButtonClicked() {
         if let url = URL(string: "https://blabbernotes.com") {
             NSWorkspace.shared.open(url)
         }

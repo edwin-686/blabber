@@ -52,7 +52,15 @@ Blabber is a macOS menu bar application that provides fast, accurate voice trans
 - [whisper-cpp](https://github.com/ggerganov/whisper.cpp) installed via Homebrew
 
 **Install whisper-cpp:**
+
 ```bash
+# 1. Install Homebrew (skip if already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Add Homebrew to your PATH (required after fresh Homebrew install)
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# 3. Install whisper-cpp (if command fails, restart terminal and try again)
 brew install whisper-cpp
 ```
 
