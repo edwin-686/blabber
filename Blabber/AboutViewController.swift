@@ -64,28 +64,20 @@ class AboutViewController: NSViewController {
         // Add some spacing
         stackView.addArrangedSubview(NSView(frame: NSRect(x: 0, y: 0, width: 1, height: 8)))
 
-        // Links section
-        let linksStackView = NSStackView()
-        linksStackView.orientation = .vertical
-        linksStackView.alignment = .centerX
-        linksStackView.spacing = 8
-        stackView.addArrangedSubview(linksStackView)
+        // Links section - Row 1: Website | GitHub | License
+        let linksRow1 = NSStackView()
+        linksRow1.orientation = .horizontal
+        linksRow1.spacing = 4
+        linksRow1.addArrangedSubview(createLinkButton(title: "Website", url: "https://blabbernotes.com"))
+        linksRow1.addArrangedSubview(createPipeLabel())
+        linksRow1.addArrangedSubview(createLinkButton(title: "GitHub", url: "https://github.com/edwin-686/blabber"))
+        linksRow1.addArrangedSubview(createPipeLabel())
+        linksRow1.addArrangedSubview(createLinkButton(title: "License", url: "https://github.com/edwin-686/blabber/blob/master/LICENSE"))
+        stackView.addArrangedSubview(linksRow1)
 
-        // Website link
-        let websiteButton = createLinkButton(title: "Website", url: "https://blabbernotes.com")
-        linksStackView.addArrangedSubview(websiteButton)
-
-        // GitHub link
-        let githubButton = createLinkButton(title: "GitHub", url: "https://github.com/edwin-686/blabber")
-        linksStackView.addArrangedSubview(githubButton)
-
-        // Support & Feature Requests link (email)
+        // Row 2: Support & Feature Requests
         let supportButton = createLinkButton(title: "Support & Feature Requests", url: "mailto:edwinsauerman@gmail.com")
-        linksStackView.addArrangedSubview(supportButton)
-
-        // License link
-        let licenseButton = createLinkButton(title: "License", url: "https://github.com/edwin-686/blabber/blob/master/LICENSE")
-        linksStackView.addArrangedSubview(licenseButton)
+        stackView.addArrangedSubview(supportButton)
 
         // Add some spacing
         stackView.addArrangedSubview(NSView(frame: NSRect(x: 0, y: 0, width: 1, height: 8)))
@@ -152,6 +144,13 @@ class AboutViewController: NSViewController {
             stackView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20)
         ])
+    }
+
+    private func createPipeLabel() -> NSTextField {
+        let label = NSTextField(labelWithString: "|")
+        label.textColor = .tertiaryLabelColor
+        label.font = NSFont.systemFont(ofSize: 13)
+        return label
     }
 
     private func createLinkButton(title: String, url: String) -> NSButton {
