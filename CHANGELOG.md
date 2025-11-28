@@ -5,6 +5,21 @@ All notable changes to Blabber will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-11-28
+
+### Added
+- Transcription language selection (auto-detect or specific language)
+
+### Changed
+- Default hotkey mode changed to double-tap
+
+### Fixed
+- Workflow processor window focus issues
+- Homebrew PATH detection for whisper-cpp
+
+### Security
+- App is now signed and notarized by Apple (no Gatekeeper warnings)
+
 ## [1.0.0] - 2025-11-10
 
 ### Added
@@ -35,4 +50,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No data collection or analytics
 - No external dependencies for basic functionality
 
+[1.0.1]: https://github.com/edwin-686/blabber/releases/tag/v1.0.1
 [1.0.0]: https://github.com/edwin-686/blabber/releases/tag/v1.0.0
